@@ -342,7 +342,7 @@ class UefiBuilder(object):
     def SetEnv(self):
         edk2_logging.log_progress("Setting up the Environment")
         shell_environment.GetEnvironment().set_shell_var("WORKSPACE", self.ws)
-        shell_environment.GetBuildVars().SetValue("WORKSPACE", self.ws, "Set in SetEnv")
+        shell_environment.GetBuildVars().SetValue("WORKSPACE", self.ws, "Set in SetEnv",True)
 
         if(self.pp is not None):
             shell_environment.GetEnvironment().set_shell_var("PACKAGES_PATH", self.pp)
@@ -366,7 +366,7 @@ class UefiBuilder(object):
             TemplateDirList.insert(0, PlatTemplatesForConf)
             logging.debug(f"Platform defined override for Template Conf Files: {PlatTemplatesForConf}")
 
-        conf_dir = os.path.join(self.ws, "Conf")
+        conf_dir = os.path.join(shell_environment.GetEnvironment().get_shell_var("WORKSPACE"), "Conf")
         conf_mgmt.ConfMgmt().populate_conf_dir(conf_dir, self.UpdateConf, TemplateDirList)
 
         # parse target file
@@ -382,10 +382,10 @@ class UefiBuilder(object):
             return ret
 
         # parse DSC file
-        ret = self.ParseDscFile()
-        if(ret != 0):
-            logging.critical("ParseDscFile failed")
-            return ret
+        #ret = self.ParseDscFile()
+        #if(ret != 0):
+        #    logging.critical("ParseDscFile failed")
+        #    return ret
 
         # parse FDF file
         ret = self.ParseFdfFile()

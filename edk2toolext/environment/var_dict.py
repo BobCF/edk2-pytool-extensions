@@ -54,6 +54,7 @@ class VarDict(object):
     def __init__(self):
         self.Logger = logging.getLogger("EnvDict")
         self.Dstore = {}  # a set of envs
+        self.ObjStore = {}
 
     def GetEntry(self, key):
         return self.Dstore.get(key.upper())
@@ -70,6 +71,23 @@ class VarDict(object):
             override = entry.Overrideable
             new_copy.SetValue(key, value, comment, override)
         return new_copy
+    def SetObject(self, k, v, comment, overridable=False):
+        '''Set Object '''
+        key = k.upper()
+        self.Logger.debug("Trying to set key %s to value %s" % (k, v))
+        self.ObjStore[key] = v
+        return True
+    def GetObject(self,k,default=None):
+        if(k is None):
+            logging.debug(
+                "GetValue - Invalid Parameter key is None.")
+            return None
+        key = k.upper()
+        en = self.ObjStore.get(key)
+        if(en is not None):
+            self.Logger.debug("Key %s found." % (key, ))
+            return en
+        return None
 
     def GetValue(self, k, default=None):
         if(k is None):
