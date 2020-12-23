@@ -24,7 +24,7 @@ from edk2toollib.utility_functions import GetHostInfo
 from edk2toolext.environment import version_aggregator
 from edk2toollib.utility_functions import locate_class_in_module
 from edk2toollib.utility_functions import import_module_by_file_name
-from edk2toolext.edk2_invocable import Edk2InvocableSettingsInterface, Edk2Invocable
+from edk2toolext.base_abstract_invocable import BaseAbstractInvocable
 
 
 class PipelineBuildSettingsManager(Edk2InvocableSettingsInterface):
@@ -39,13 +39,60 @@ class PipelineBuildSettingsManager(Edk2InvocableSettingsInterface):
         return []
 
 
-class Edk2PipelineInvocable(Edk2Invocable):
-    ''' Base class for Multi-Pkg aware invocable '''
+class Edk2PipelineInvocable(BaseAbstractInvocable):
 
     def __init__(self):
         self.requested_architecture_list = []
         self.requested_target_list = []
         super().__init__()
+
+    def ParseCommandLineOptions(self):
+        # TODO: implement it
+        pass
+
+    def GetWorkspaceRoot(self):
+        # TODO: implement it
+        pass
+
+    def GetActiveScopes(self) -> Tuple[str]:
+        ''' Use the SettingsManager to return tuple containing scopes that should be active for this process.'''
+        try:
+            scopes = self.PlatformSettings.GetActiveScopes()
+        except AttributeError:
+            raise RuntimeError("Can't call this before PlatformSettings has been set up!")
+
+        # Add any OS-specific scope.
+        if GetHostInfo().os == "Windows":
+            scopes += ('global-win',)
+        elif GetHostInfo().os == "Linux":
+            scopes += ('global-nix',)
+        # Add the global scope. To be deprecated.
+        scopes += ('global',)
+        return scopes
+
+    def GetLoggingLevel(self, loggerType):
+        ''' Get the logging level for a given type
+        base == lowest logging level supported
+        con  == Screen logging
+        txt  == plain text file logging
+        md   == markdown file logging
+        '''
+        try:
+            level = self.PlatformSettings.GetLoggingLevel(loggerType)
+            if level is not None:
+                return level
+        except:
+            pass
+
+        if(loggerType == "con") and not self.Verbose:
+            return logging.WARNING
+
+    def GetLoggingFolderRelativeToRoot(self):
+        return "Build"
+
+    def ParseCommandLineOptions(self):
+        # TODO:
+        pass
 
     def AddCommandLineOptions(self, parserObj):
         ''' adds command line options to the argparser '''
@@ -101,4 +148,7 @@ class Edk2PipelineInvocable(Edk2Invocable):
         sys.exit(retcode)
 
     def Go(self):
-        pass
+
+
+def main():
+    Edk2PipelineInvocable().Invoke()
