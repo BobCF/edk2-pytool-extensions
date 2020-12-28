@@ -22,9 +22,11 @@ from edk2toollib.utility_functions import RunCmd
 from edk2toolext import edk2_logging
 from edk2toolext.environment.plugintypes.uefi_build_plugin import IUefiBuildPlugin
 import datetime
+from edk2toolext.environment.pipeline_builder import PipelineSettingsManager
+from edk2toolext.environment.pipeline_builder import PipelineBuilder
 
 
-class IntelBuilder(object):
+class IntelBuilder(PipelineBuilder):
 
     def __init__(self):
         self.SkipBuild = False

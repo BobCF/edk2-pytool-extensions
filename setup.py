@@ -1,4 +1,4 @@
-## @file setup.py
+# @file setup.py
 # This contains setup info for edk2-pytool-extensions pip module
 #
 ##
@@ -18,6 +18,7 @@ with open("readme.md", "r") as fh:
 
 class PostSdistCommand(sdist):
     """Post-sdist."""
+
     def run(self):
         # we need to download nuget so throw the exception if we don't get it
         DownloadNuget()
@@ -26,6 +27,7 @@ class PostSdistCommand(sdist):
 
 class PostInstallCommand(install):
     """Post-install."""
+
     def run(self):
         try:
             DownloadNuget()
@@ -36,6 +38,7 @@ class PostInstallCommand(install):
 
 class PostDevCommand(develop):
     """Post-develop."""
+
     def run(self):
         try:
             DownloadNuget()
@@ -54,8 +57,8 @@ setuptools.setup(
     url="https://github.com/tianocore/edk2-pytool-extensions",
     license='BSD-2-Clause-Patent',
     packages=setuptools.find_packages(),
-    use_scm_version=True,
-    setup_requires=['setuptools_scm'],
+    #    use_scm_version=True,
+    #    setup_requires=['setuptools_scm'],
     cmdclass={
         'sdist': PostSdistCommand,
         'install': PostInstallCommand,
@@ -74,7 +77,8 @@ setuptools.setup(
                             'sig_db_tool=edk2toolext.uefi.sig_db_tool:main',
                             'firmware_policy_tool=edk2toolext.windows.policy.firmware_policy_tool:main',
                             'edk2_capsule_tool=edk2toolext.capsule.capsule_tool:main',
-                            'versioninfo_tool=edk2toolext.versioninfo.versioninfo_tool:main']
+                            'versioninfo_tool=edk2toolext.versioninfo.versioninfo_tool:main',
+                            'stuart_pipeline_build=edk2toolext.invocables.pipeline_invocable:main']
     },
     install_requires=[
         'pyyaml>=5.2',
