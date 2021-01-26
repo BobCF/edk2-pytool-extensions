@@ -25,6 +25,7 @@ from edk2toollib.utility_functions import locate_class_in_module
 from edk2toollib.utility_functions import import_module_by_file_name
 from edk2toolext.base_abstract_invocable import BaseAbstractInvocable
 from edk2toolext.invocables.PipelineBuildSettingsManager import PipelineBuildSettingsManager
+from edk2toolext.environment.pipeline_builder import PipelineBuilder
 
 
 class Edk2PipelineInvocable(BaseAbstractInvocable):
@@ -197,7 +198,17 @@ Key=value will get passed to build process for given build type)'''
 
     def AddCommandLineOptions(self, parserObj):
         ''' adds command line options to the argparser '''
-        pass
+        # PlatformSettings could also be a subclass of UefiBuilder, who knows!
+        if isinstance(self.PlatformSettings, PipelineBuilder):
+            self.PlatformBuilder = self.PlatformSettings
+        else:
+            try:
+                # if it's not, we will try to find it in the module that was originally provided.
+                self.PlatformBuilder = locate_class_in_module(self.PlatformModule, UefiBuilder)()
+            except (TypeError):
+                raise RuntimeError(f"UefiBuild not found in module:\n{dir(self.PlatformModule)}")
+
+        self.PlatformBuilder.AddPlatformCommandLineOptions(parserObj)
 
     def RetrieveCommandLineOptions(self, args):
         '''  Retrieve command line options from the argparser '''
@@ -235,7 +246,7 @@ Key=value will get passed to build process for given build type)'''
     def Go(self):
         # TODO: instanaces the pipeline builder and launch steps
         #
-        return 0
+        return self.PlatformBuilder.Go()
 
 
 def main():

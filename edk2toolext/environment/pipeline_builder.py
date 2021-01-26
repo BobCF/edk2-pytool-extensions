@@ -18,3 +18,7 @@ class PipelineBuilder(object):
 
     def Actions(self):
         pass
+
+    def Go(self):
+        print("hello world")
+        return 0

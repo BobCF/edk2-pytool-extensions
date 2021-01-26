@@ -78,12 +78,13 @@ setuptools.setup(
                             'firmware_policy_tool=edk2toolext.windows.policy.firmware_policy_tool:main',
                             'edk2_capsule_tool=edk2toolext.capsule.capsule_tool:main',
                             'versioninfo_tool=edk2toolext.versioninfo.versioninfo_tool:main',
-                            'stuart_pipeline_build=edk2toolext.invocables.pipeline_invocable:main']
+                            'stuart_pipeline_build=edk2toolext.invocables.pipeline_invocable:main',
+                            'stuart_nonedk2_build=edk2toolext.invocables.non_edk2_invocable:main']
     },
     install_requires=[
-        'pyyaml>=5.2',
-        'edk2-pytool-library>=0.10.13',
-        'pefile>=2019.4.18'
+        #        'pyyaml>=5.2',
+        #        'edk2-pytool-library>=0.10.13',
+        #        'pefile>=2019.4.18'
     ],
     extras_require={
         'openssl': ['pyopenssl']
