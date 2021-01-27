@@ -100,6 +100,9 @@ Key=value will get passed to build process for given build type)'''
         try:
             self.PlatformModule = import_module_by_file_name(os.path.abspath(settingsArg.platform_module))
             self.PlatformBuilder = locate_class_in_module(self.PlatformModule, NonEdk2Builder)()
+            env = shell_environment.GetBuildVars()
+            env.SetValue("BUILDER_HOME", os.path.dirname(
+                os.path.abspath(settingsArg.platform_module)), "From the framework")
         except (TypeError):
             # Gracefully exit if the file we loaded isn't the right type
             class_name = self.GetSettingsClass().__name__
@@ -147,6 +150,8 @@ Key=value will get passed to build process for given build type)'''
 
         default_build_config_path = os.path.join(self.GetWorkspaceRoot(), "BuildConfig.conf")
 
+        parserObj.add_argument('--output_dir', help='The output folder.', default=os.path.abspath("Build"))
+
         # add the common stuff that everyone will need
         parserObj.add_argument('--build-config', dest='build_config', default=default_build_config_path, type=str,
                                help='Provide shell variables in a file')
@@ -156,6 +161,8 @@ Key=value will get passed to build process for given build type)'''
         # setup sys.argv and argparse round 2
         sys.argv = [sys.argv[0]] + unknown_args
         args, unknown_args = parserObj.parse_known_args()
+
+        self.output_dir = args.output_dir
         self.Verbose = args.verbose
 
         # give the parsed args to the subclass
@@ -226,7 +233,7 @@ Key=value will get passed to build process for given build type)'''
 
     def GetActiveScopes(self) -> Tuple[str]:
         ''' Optional API to return Tuple containing scopes that should be active for this process '''
-        return ()
+        return ('global',)
 
     def GetLoggingLevel(self, loggerType):
         ''' Get the logging level for a given type
@@ -248,6 +255,9 @@ Key=value will get passed to build process for given build type)'''
 
     def GetLoggingFolderRelativeToRoot(self):
         return "Build"
+
+    def GetVerifyCheckRequired(self):
+        return False
 
     def PerformUpdate(self):
         ws_root = self.GetWorkspaceRoot()
@@ -297,8 +307,14 @@ Key=value will get passed to build process for given build type)'''
     def Go(self):
         logging.info("Running Python version: " + str(sys.version_info))
 
+        ws_root = self.GetWorkspaceRoot()
+        scopes = self.GetActiveScopes()
         (build_env, shell_env) = self_describing_environment.BootstrapEnvironment(
-            self.GetWorkspaceRoot(), self.GetActiveScopes())
+            ws_root, scopes)
+
+        (success, failure) = self_describing_environment.UpdateDependencies(ws_root, scopes)
+        if success != 0:
+            logging.log(edk2_logging.SECTION, f"\tUpdated/Verified {success} dependencies")
 
         # PYTHON_COMMAND is required to be set for using edk2 python builds.
         # todo: work with edk2 to remove the bat file and move to native python calls
@@ -326,7 +342,6 @@ Key=value will get passed to build process for given build type)'''
         # Now we can actually kick off a build.
         #
         logging.log(edk2_logging.SECTION, "Kicking off build")
-        self.update_ext_deps()
         ret = self.PlatformBuilder.Go()
         logging.log(edk2_logging.SECTION, f"Log file is located at: {self.log_filename}")
         return ret

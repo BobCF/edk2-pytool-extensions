@@ -2,6 +2,8 @@ from edk2toolext.invocables.edk2_update import Edk2Update, build_env_changed
 import logging
 from edk2toolext import edk2_logging
 from edk2toolext.environment import self_describing_environment
+from edk2toolext.environment import shell_environment
+import os
 
 
 class NonEdk2Builder(Edk2Update):
@@ -27,9 +29,11 @@ class NonEdk2Builder(Edk2Update):
         raise NotImplementedError
 
     def Go(self):
+        self.env = shell_environment.GetBuildVars()
         self.execute()
         return 0
 
     def GetWorkspaceRoot(self):
-        pass
+        env = shell_environment.GetBuildVars()
+        return env.GetValue("BUILDER_HOME")
         # TODO: output folder design
