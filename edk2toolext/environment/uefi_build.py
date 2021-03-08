@@ -264,8 +264,10 @@ class UefiBuilder(object):
         #               have consistent ordering. Addresses incremental builds.
         pre_build_env_chk = env.checkpoint()
         env.set_shell_var('PYTHONHASHSEED', '0')
+        env.set_shell_var('EDK_TOOLS_PATH', self.env.GetValue('EDK_TOOLS_PATH'))
+        env.set_shell_var('BASE_TOOLS_PATH', self.env.GetValue('BASE_TOOLS_PATH'))
         env.log_environment()
-        ret = RunCmd("build", params)
+        ret = RunCmd("edk2_build", params)
         # WORKAROUND - Undo the workaround.
         env.restore_checkpoint(pre_build_env_chk)
 
@@ -382,10 +384,10 @@ class UefiBuilder(object):
             return ret
 
         # parse DSC file
-        ret = self.ParseDscFile()
-        if(ret != 0):
-            logging.critical("ParseDscFile failed")
-            return ret
+#        ret = self.ParseDscFile()
+#        if(ret != 0):
+#            logging.critical("ParseDscFile failed")
+#            return ret
 
         # parse FDF file
         ret = self.ParseFdfFile()

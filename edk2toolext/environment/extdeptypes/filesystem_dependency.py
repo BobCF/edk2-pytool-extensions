@@ -80,7 +80,8 @@ class FsDependency(ExternalDependency):
         for file in files_to_extract:
             _ref.extract(member=file, path=destination)
         _ref.close()
-
+    def verify(self):
+        return False
     def fetch(self):
         try:
             if self.compression_type:

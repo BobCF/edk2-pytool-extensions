@@ -33,7 +33,3 @@ class NonEdk2Builder(Edk2Update):
         self.execute()
         return 0
 
-    def GetWorkspaceRoot(self):
-        env = shell_environment.GetBuildVars()
-        return env.GetValue("BUILDER_HOME")
-        # TODO: output folder design
